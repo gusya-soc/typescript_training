@@ -1,0 +1,6 @@
+// hello,world  in typescript
+function hello_world() {
+    console.log("hello,world");
+}
+
+hello_world();
