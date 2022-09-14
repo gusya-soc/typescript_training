@@ -14,6 +14,6 @@ const server = http.createServer((req, res) => {
     }).on('end', () => {
         body = Buffer.concat(body).toString();
         console.log(body);
-        res.end(`method:${method}\nresponse:',${body}`);
+        res.end(`method:${method}\nresponse:ok',`);
     });
 }).listen(8080);
