@@ -6,7 +6,7 @@ const connection = sql.createConnection({
     host: process.env.userhost,
     user: process.env.username,
     password: process.env.userpassword,
-    database: 'Users'
+    database: 'TYPESCRIPT'
 });
 
 connection.connect((err) => {
@@ -24,3 +24,7 @@ connection.query('SELECT * FROM Users', (err, rows, fields) => {
         console.log(rows);
     }
 });
+connection.end();
+
+
+export {connection};
