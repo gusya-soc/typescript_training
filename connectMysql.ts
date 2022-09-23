@@ -9,22 +9,22 @@ const connection = sql.createConnection({
     database: 'TYPESCRIPT'
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log('connected');
-    }
-});
+// connection.connect((err) => {
+//     if (err) {
+//         console.log(err);
+//     } else {
+//         console.log('connected');
+//     }
+// });
 
-connection.query('SELECT * FROM Users', (err, rows, fields) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log(rows);
-    }
-});
-connection.end();
+// connection.query('SELECT * FROM Users', (err, rows, fields) => {
+//     if (err) {
+//         console.log(err);
+//     } else {
+//         console.log(rows);
+//     }
+// });
+// connection.end();
 
 
 export {connection};
