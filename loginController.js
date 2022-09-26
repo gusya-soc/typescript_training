@@ -18,70 +18,65 @@ var port = 3000;
 // let hash = createHash('sha256');
 // console.log(hash.update("123123").digest('hex'));
 function checkLogin(username, password) {
-    var result;
-    connectMysql_1.connection.query("SELECT * FROM Users WHERE User_name = '".concat(username, "'"), function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            result = false;
-        }
-        else {
-            if (rows.length === 0) {
-                result = false;
+    return new Promise(function (resolve, reject) {
+        connectMysql_1.connection.query("SELECT * FROM Users WHERE User_name = '".concat(username, "'"), function (err, rows, fields) {
+            if (err) {
+                reject(err);
             }
             else {
-                var hmac = (0, crypto_1.createHmac)('sha256', rows[0].salt.toString());
-                if (rows[0].User_password === hmac.update(password).digest('hex')) {
-                    result = true;
+                if (rows.length === 0) {
+                    reject(err);
                 }
                 else {
-                    result = false;
+                    var hmac = (0, crypto_1.createHmac)('sha256', rows[0].salt.toString());
+                    if (rows[0].User_password === hmac.update(password).digest('hex')) {
+                        resolve(rows[0]);
+                    }
+                    else {
+                        reject("authentication failed");
+                    }
                 }
             }
-        }
+        });
     });
-    return result;
 }
 app.use(bodyParser.urlencoded({ extended: true }));
 app.post("/login", function (req, res) {
     var username = req.body.username;
     var password = req.body.password;
-    if (checkLogin(username, password)) {
-        res.send("Login successful");
-    }
-    else {
-        res.send("Login failed");
-    }
+    checkLogin(username, password).then(function (result) {
+        res.send("login success");
+        console.log(result);
+        // res.cookie("username", username);
+    })["catch"](function (err) {
+        res.send(err);
+    });
 });
 function register(username, password) {
-    var result;
     var salt = Math.floor(Math.random() * 100000).toString();
     console.log(salt);
     var hmac = (0, crypto_1.createHmac)('sha256', salt);
-    return connectMysql_1.connection.query("INSERT INTO Users (User_name, User_password, submission_date, salt) VALUES ('".concat(username, "', '").concat(hmac.update(password).digest('hex'), "', now(), '").concat(salt, "')"), function (err, rows, fields) {
-        if (err) {
-            console.log(err);
-            result = false;
-        }
-        else {
-            // console.log(rows);
-            result = true;
-            console.log("the result:".concat(result));
-        }
-        return result;
+    return new Promise(function (resolve, reject) {
+        connectMysql_1.connection.query("INSERT INTO Users (User_name, User_password, salt) VALUES ('".concat(username, "', '").concat(hmac.update(password).digest('hex'), "', '").concat(salt, "')"), function (err, rows, fields) {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(rows);
+            }
+        });
     });
 }
 app.post("/register", function (req, res) {
     var username = req.body.username;
     var password = req.body.password;
-
-    // not running as expected
-    // falut register require also return the successful message
-    if (register(username, password)) {
-        res.send("Register successful");
-    }
-    else {
-        res.send("Register failed");
-    }
+    register(username, password).then(function (result) {
+        res.send("".concat(username, " register successed"));
+        console.log(result);
+    })["catch"](function (err) {
+        res.send("register failed");
+        console.log(err);
+    });
 });
 app.listen(port, function () {
     console.log("Example app listening at http://localhost:".concat(port));
