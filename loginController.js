@@ -50,6 +50,16 @@ function createToken() {
     var hmac = (0, crypto_1.createHmac)('sha256', x.toString());
     return hmac.update((x * Math.floor(Math.random() * 1000000)).toString()).digest('hex');
 }
+function isLogin(req, res, next) {
+    if (req.cookies.token) {
+        console.log(req.cookies.token);
+        next();
+    }
+    else {
+        res.redirect('login');
+    }
+}
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.post("/login", function (req, res) {
@@ -109,6 +119,9 @@ app.post("/register", function (req, res) {
             }
         });
     });
+});
+app.get('/', isLogin, function (req, res) {
+    res.send("Hello World!\n".concat(req.cookies.token));
 });
 app.listen(port, function () {
     console.log("Example app listening at http://localhost:".concat(port));

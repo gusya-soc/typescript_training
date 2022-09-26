@@ -49,6 +49,17 @@ function createToken():string{
     return hmac.update((x*Math.floor(Math.random() * 1000000)).toString()).digest('hex');
 }
 
+function isLogin(req,res,next){
+    // not tested yet
+    if(req.cookies.token){
+        console.log(req.cookies.token);
+        next()
+    }else{
+        res.redirect('/login');
+    }
+}
+
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.post("/login", (req, res) => {
@@ -119,6 +130,11 @@ app.post("/register", (req, res) => {
                 }
             )
         });
+});
+
+
+app.get('/',isLogin,(req, res) => {
+    res.send(`Hello World!\n${req.cookies.token}`);
 });
 
 app.listen(port, () => {
