@@ -30,7 +30,7 @@ function checkLogin(username:string, password:string) {
 }
 function register(username:string, password:string) {
     let salt:string = Math.floor(Math.random() * 100000).toString();
-    console.log(salt);
+    // console.log(salt);
     let hmac = createHmac('sha256',salt);
     return new Promise((resolve, reject) => {
         connection.query(`INSERT INTO Users (User_name, User_password, salt) VALUES ('${username}', '${hmac.update(password).digest('hex')}', '${salt}')`, (err, rows, fields) => {
@@ -43,17 +43,47 @@ function register(username:string, password:string) {
     })
 }
 
+function createToken():string{
+    let x:number = Math.floor(Math.random() * 1000000);
+    let hmac = createHmac('sha256',x.toString());
+    return hmac.update((x*Math.floor(Math.random() * 1000000)).toString()).digest('hex');
+}
+
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.post("/login", (req, res) => {
     let username:string = req.body.username;
     let password:string = req.body.password;
     checkLogin(username, password).then((result) => {
-        res.send("login success");
-        console.log(result);
+        // res.send("login success");
+        // console.log(result);
         // res.cookie("username", username);
-    }).catch((err) => {
-        res.send("authentication failed");
 
+        res.json(
+            {
+                "response":{
+                    "success":true,
+                    "error":null,
+                    "result":{
+                        "token":createToken()
+                    }
+                }
+            }
+        )
+    }).catch((err) => {
+        // res.send("authentication failed");
+        res.json(
+            {
+                "response":{
+                    "success":false,
+                    "error":{
+                        "status":500,
+                        "message":"authentication failed"
+                    },
+                    "result":null
+                }
+            }
+        )
     });
 });
 
@@ -62,11 +92,32 @@ app.post("/register", (req, res) => {
         let username:string = req.body.username;
         let password:string = req.body.password;
         register(username, password).then((result) => {
-            res.send(`${username} register successed`);
-            console.log(result);
+            // res.send(`${username} register successed`);
+            // console.log(result);
+            res.json(
+                {
+                    "response":{
+                        "success":true,
+                        "error":null,
+                        "result":null
+                    }
+                }
+            )
         }).catch((err) => {
-            res.send("register failed");
-            console.log(err);
+            // res.send("register failed");
+            // console.log(err);
+            res.json(
+                {
+                    "response":{
+                        "success":false,
+                        "error":{
+                            "status":500,
+                            "message":"register failed"
+                        },
+                        "result":null
+                    }
+                }
+            )
         });
 });
 
